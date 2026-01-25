@@ -103,7 +103,7 @@ export function GameCar(props) {
             Math.pow(currentPos.z - tile[2], 2)
         );
 
-        if (dist < 3.5) {
+        if (dist < 4.5) {
           isSafe = true;
           props.onScoreUpdate(i);
           break;
