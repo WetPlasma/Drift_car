@@ -11,7 +11,7 @@ export const GAME_CONFIG = {
     initialPosition: [0, 1, 0], // x=0, y=1 (lifted up), z=0
     scale: 0.047, // Shrinking the huge Sketchfab model down to toy size
     rotation: [0, 0, 0], // Math.PI = 180 degrees. Faces the car away from the camera.
-    speed: 30, // The car moves 15 units per second.
+    speed: 35, // The car moves 15 units per second.
   },
   road: {
     scale: [1, 1, 1], // Default size for tiles

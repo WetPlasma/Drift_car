@@ -47,6 +47,7 @@ function App() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap');`}</style>
 
       <Canvas
+        dpr={[1, 1.5]}
         orthographic
         camera={{
           zoom: GAME_CONFIG.camera.zoom,
