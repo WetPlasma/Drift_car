@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
-import { useGLTF } from "@react-three/drei";
+import React, { useRef, useState, useEffect, useMemo } from "react"; // Added useMemo
+import { useGLTF, Trail } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { GAME_CONFIG } from "../location";
@@ -11,6 +11,21 @@ export function GameCar(props) {
 
   // Track inputs
   const [direction, setDirection] = useState("northwest"); // Hook with -z as starting direction. hook used here so only car can update in full dom.
+
+  // --- AUDIO SETUP ---
+  // We use useMemo to load these sounds only once when the game starts.
+  // "volume = 0.5" makes it 50% volume so it's not too loud.
+  const driftAudio = useMemo(() => {
+    const audio = new Audio("/drift.mp3");
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  const straightAudio = useMemo(() => {
+    const audio = new Audio("/straight.mp3");
+    audio.volume = 0.5;
+    return audio;
+  }, []);
 
   // Shadows : traversing all mats ans placing shadows is removed for render optimiztion purposes.
 
@@ -24,13 +39,28 @@ export function GameCar(props) {
   useEffect(() => {
     // key down will occur when space is hold and vice versa for keyup
     const handleKeyDown = (e) => {
+      // Added check: Only run if we aren't ALREADY going northeast
+      // This prevents the sound from stuttering if you hold the key
       if (e.code === "Space" && props.gameState === "playing") {
-        setDirection("northeast");
+        setDirection((prev) => {
+          if (prev !== "northeast") {
+            // Play Drift Sound
+            driftAudio.currentTime = 0; // Rewind to start if pressed quickly
+            driftAudio.play().catch(() => {}); // catch handles auto-play errors
+            return "northeast";
+          }
+          return prev;
+        });
       }
     };
+
     const handleKeyUp = (e) => {
       if (e.code === "Space" && props.gameState === "playing") {
         setDirection("northwest");
+
+        // Play Straight Sound
+        straightAudio.currentTime = 0;
+        straightAudio.play().catch(() => {});
       }
     };
 
@@ -41,7 +71,7 @@ export function GameCar(props) {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [props.gameState]);
+  }, [props.gameState, driftAudio, straightAudio]);
 
   // --- GAME LOOP ---
 
@@ -129,6 +159,30 @@ export function GameCar(props) {
   // --- RENDER THE CAR ---
   return (
     <group ref={carRef} position={props.position} scale={props.scale}>
+      {/* Left Tire Trail (Your custom settings) */}
+      <Trail
+        width={0.25}
+        length={6}
+        color="#171717"
+        attenuation={(t) => t * 0.7}
+      >
+        <mesh position={[-3.9, 0.1, -0.5]} visible={false}>
+          <boxGeometry args={[0.05, 0.05, 0.05]} />
+        </mesh>
+      </Trail>
+
+      {/* Right Tire Trail (Your custom settings) */}
+      <Trail
+        width={0.25}
+        length={6}
+        color="#171717"
+        attenuation={(t) => t * 0.7}
+      >
+        <mesh position={[3.9, 0.1, -0.5]} visible={false}>
+          <boxGeometry args={[0.05, 0.05, 0.05]} />
+        </mesh>
+      </Trail>
+
       <primitive object={scene} />
     </group>
   );
